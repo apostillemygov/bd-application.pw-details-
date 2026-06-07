@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Apostille</title>
+  <link rel="shortcut icon" href="logo2.png" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: #fff;
+    }
+
+    /* Header */
+    .header {
+      background: #fff;
+      padding: 6px 18px;
+    }
+
+    .header img {
+      height: 56px;
+      max-width: 100%;
+    }
+
+    /* Breadcrumb */
+    h3.app__style {
+      font-size: 18px;
+      padding: 0 16px;
+      font-family: 'Times New Roman', serif;
+      margin: 30px 0 10px;
+    }
+
+    /* Wrapper: box + button */
+    .apostille-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+      padding: 0 16px;
+      position: relative;
+      justify-content: space-between;
+    }
+
+    /* Main PDF bordered box */
+    .main__pdf__data {
+      width: 100%;
+      max-width: 630px;
+      border: 2px solid #ddd;
+      padding: 20px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Apostille preview container */
+    .containers {
+      position: relative;
+      width: 100%;
+      background: #fff;
+      box-shadow: 1px 3px 15px #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      min-height: 160px;
+    }
+
+    /* Inner loader */
+    .loader-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      min-height: 200px;
+    }
+
+    .loader {
+      border: 1px solid #e0e0e0;
+      border-top: 2px solid #808080;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin .3s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg)
+      }
+
+      100% {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* Download button */
+    .btn-outside {
+      padding: 8px 0 4px 10px;
+      flex-shrink: 0;
+    }
+
+    button.download__pdf_btn {
+      background: #000;
+      color: #fff;
+      font-weight: 600;
+      padding: 7px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      border: none;
+      font-family: 'Times New Roman', serif;
+      white-space: nowrap;
+    }
+
+    /* Certificate section */
+    .footer__data {
+      margin-top: 40px;
+      padding: 0 16px;
+    }
+
+    .footer__data h3 {
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 16px;
+      font-family: 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .scancopyv1 {
+      padding: 16px 0;
+    }
+
+    img.main__signature {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .foooter__datas {
+      padding: 20px 0;
+      text-align: center;
+      color: #581c87;
+      width: 465px;
+    }
+
+    .foooter__datas img.main__signed {
+      display: block;
+      width: 102px;
+      margin: 16px auto 0;
+    }
+
+    #sigCanvas {
+      display: block;
+      width: 102px;
+      height: 51px;
+      margin: 5px auto 0;
+    }
+
+    .foooter__datas p {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .foooter__datas h2 {
+      font-weight: 400;
+      font-size: 18px;
+      font-family: sans-serif;
+      padding: 6px 0;
+      line-height: 1.3;
+    }
+
+    /* Site footer */
+    .footer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f3f3f9;
+      padding: 10px 16px;
+      gap: 6px;
+      margin-top: 30px;
+    }
+
+    .footer-container p {
+      font-size: 11px;
+      font-family: sans-serif;
+      margin: 0;
+    }
+
+    .footer-right img {
+      height: 40px;
+    }
+
+    .footer-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    p.copyright,
+    p.gov-info {
+      padding: 0;
+      margin: 0;
+    }
+
+    .left____data {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .right____text p {
+      font-size: 11px;
+      font-family: sans-serif;
+    }
+
+    /* Page loader */
+    #pageLoader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    /* Tablet */
+    @media (max-width: 850px) {
+      .apostille-row {
+        justify-content: unset;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-outside {
+        align-self: flex-end;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .apostille-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .main__pdf__data {
+        max-width: 100%;
+        padding: 12px;
+      }
+
+      .btn-outside {
+        padding: 10px 0 0 0;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .footer-right img {
+        height: 28px;
+      }
+
+      .footer-container p {
+        font-size: 9px;
+      }
+      .foooter__datas {
+        padding: 20px 0;
+        text-align: center;
+        color: #581c87;
+        width: 100%;
+      }
+    }
+
+    /* Small mobile */
+    @media (max-width: 400px) {
+      h3.app__style {
+        font-size: 15px;
+      }
+
+      button.download__pdf_btn {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+
+      .footer-right img {
+        height: 22px;
+      }
+
+      .footer-container p {
+        font-size: 8px;
+      }
+
+      .foooter__datas h2 {
+        font-size: 14px;
+      }
+      .foooter__datas {
+        padding: 20px 0;
+        text-align: center;
+        color: #581c87;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="pageLoader">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Header — no border -->
+  <header class="header">
+    <img src="logo3.png" alt="myGov Apostille">
+  </header>
+
+  <div id="mainContent" style="display:none">
+
+    <h3 class="app__style">আপোস্টিল</h3>
+
+    <!-- Box + button outside, right-aligned -->
+    <div class="apostille-row">
+      <div class="main__pdf__data">
+        <div class="containers" id="apostilleContainer">
+          <div class="loader-overlay" id="innerLoader">
+            <div class="loader"></div>
+          </div>
+          <div id="apostilleSvgWrap" style="display:none;">
+            <canvas id="apostillePdfCanvas" style="display:block;"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- Button is OUTSIDE the box, bottom-aligned -->
+      <div class="btn-outside">
+        <button class="download__pdf_btn" onclick="printApostille()">⬇ আপোস্টিল ডাউনলোড</button>
+      </div>
+    </div>
+
+    <div class="footer__data">
+      <h3>সনদপত্র/নম্বরপত্র/একাডেমিক ট্রান্সক্রিপ্ট/ডকুমেন্টস</h3>
+      <div class="scancopyv1">
+        <div class="main__sign_data"><!-- 👇CHANGE HERE👇 -->
+          <img class="main__signature" src="1776890199.jpeg" alt="Certificate Scan">
+        </div>
+        <div class="foooter__datas">
+          <img class="main__signed" src="sign1.png" alt="Attested">
+          <img class="main__signed" src="Signature2.png" alt="Attested">
+                              <!-- 👇CHANGE HERE👇 -->
+          <h2 class="margin_bottom">06-Jun-2026</h2>
+          <h2>Md Habibur Rahman</h2>
+          <h2>Superintendent of Police</h2>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-left">
+          <div class="logo__image__footer">
+            <img src="logo4.png" alt="">
+          </div>
+          <div class="left____data">
+            <p class="copyright">কপিরাইট © ২০২৫ সর্বস্বত্ব সংরক্ষিত</p>
+            <p class="gov-info">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</p>
+          </div>
+        </div>
+        <div class="footer-right">
+          <div class="right____text">
+            <p>পরিকল্পনা বাস্তবায়নে</p>
+          </div>
+          <a href="1776851406.html"><img src="logo5.png" alt=""></a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+                                                            // <!-- 👇CHANGE HERE👇 -->
+// <!-- https://apostillemygov.github.io/bd-application.pw-details-/1776890199.html -->
+              // <!-- 👇CHANGE HERE👇 -->
+    var PDF_URL = '1776890199.pdf';
+
+    function fallbackToIframe() {
+      var wrap = document.getElementById('apostilleSvgWrap');
+      wrap.innerHTML =
+        '<div style="position:relative;width:100%;padding-bottom:141.42%;overflow:hidden;">' +
+        '<iframe src="' + PDF_URL + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&page=1" ' +
+        'style="position:absolute;top:-12px;left:-12px;width:calc(100% + 24px);height:calc(100% + 24px);border:none;" scrolling="no"></iframe>' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;height:14px;background:#fff;z-index:10;"></div>' +
+        '<div style="position:absolute;top:0;left:0;bottom:0;width:14px;background:#fff;z-index:10;"></div>' +
+        '<div style="position:absolute;top:0;right:0;bottom:0;width:14px;background:#fff;z-index:10;"></div>' +
+        '<div style="position:absolute;top:0;left:0;right:0;height:14px;background:#fff;z-index:10;"></div>' +
+        '</div>';
+    }
+
+    function renderPdfToCanvas(pdfUrl, canvasId) {
+      if (typeof pdfjsLib === 'undefined') { fallbackToIframe(); return; }
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.getDocument(pdfUrl).promise.then(function (pdf) {
+        pdf.getPage(1).then(function (page) {
+          var canvas = document.getElementById(canvasId);
+          if (!canvas) { fallbackToIframe(); return; }
+          var dpr = window.devicePixelRatio || 1;
+          var containerWidth = canvas.parentElement.clientWidth || 300;
+          var viewport = page.getViewport({ scale: 1 });
+          var scale = (containerWidth / viewport.width) * dpr;
+          var scaledViewport = page.getViewport({ scale: scale });
+          canvas.width = scaledViewport.width;
+          canvas.height = scaledViewport.height;
+          canvas.style.width = containerWidth + 'px';
+          canvas.style.height = (scaledViewport.height / dpr) + 'px';
+          page.render({ canvasContext: canvas.getContext('2d'), viewport: scaledViewport });
+        });
+      }).catch(function () { fallbackToIframe(); });
+    }
+
+    function printApostille() {
+      var pw = window.open(PDF_URL, '_blank');
+      pw.focus();
+      setTimeout(function () { pw.print(); }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () {
+        document.getElementById('pageLoader').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        setTimeout(function () {
+          document.getElementById('innerLoader').style.display = 'none';
+          document.getElementById('apostilleSvgWrap').style.display = 'block';
+          renderPdfToCanvas(PDF_URL, 'apostillePdfCanvas');
+        }, 1000);
+      }, 1000);
+    });
+
+    document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    document.addEventListener('contextmenu', function (e) {
+      if (e.target.tagName === 'IMG' || e.target.tagName === 'CANVAS') e.preventDefault();
+    });
+  </script>
+</body>
+
+</html>
